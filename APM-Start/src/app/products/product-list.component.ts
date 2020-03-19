@@ -4,7 +4,8 @@ import { Component, OnInit } from "@angular/core";
 
 import { Product } from "./product";
 import { ProductService } from "./product.service";
-import { Observable } from "rxjs";
+import { Observable, of, EMPTY } from "rxjs";
+import { catchError } from "rxjs/operators";
 
 @Component({
   templateUrl: "./product-list.component.html",
@@ -29,7 +30,12 @@ export class ProductListComponent implements OnInit {
     //     error => this.errorMessage = error
     //   );
 
-    this.products$ = this.productService.getProducts();
+    this.products$ = this.productService.getProducts().pipe(
+      catchError(err => {
+        this.errorMessage = err;
+        return EMPTY;
+      })
+    );
   }
 
   // ngOnDestroy(): void {
