@@ -2,7 +2,15 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 
 import { throwError, of } from "rxjs";
-import { map, tap, concatMap, mergeMap, switchMap } from "rxjs/operators";
+import {
+  map,
+  tap,
+  concatMap,
+  mergeMap,
+  switchMap,
+  shareReplay,
+  catchError
+} from "rxjs/operators";
 import { Supplier } from "./supplier";
 
 @Injectable({
@@ -15,11 +23,16 @@ export class SupplierService {
     // this.suppliersWithMap$.subscribe(o =>
     //   o.subscribe(item => console.log("map result", item))
     // );
-
-    this.suppliersWithConcatMap$.subscribe(item => console.log("concatMap result", item))
-    this.suppliersWithMergeMap$.subscribe(item => console.log("mergeMap result", item))
-    this.suppliersWithSwitchMap$.subscribe(item => console.log("switchMap result", item))
+    // this.suppliersWithConcatMap$.subscribe(item => console.log("concatMap result", item))
+    // this.suppliersWithMergeMap$.subscribe(item => console.log("mergeMap result", item))
+    // this.suppliersWithSwitchMap$.subscribe(item => console.log("switchMap result", item))
   }
+
+  suppliers$ = this.http.get<Supplier[]>(this.suppliersUrl).pipe(
+    tap(data => console.log("suppliers", JSON.stringify(data))),
+    shareReplay(1),
+    catchError(this.handleError)
+  );
 
   // Map
   suppliersWithMap$ = of(1, 5, 8).pipe(
@@ -28,22 +41,21 @@ export class SupplierService {
 
   // Concat Map
   suppliersWithConcatMap$ = of(1, 5, 8).pipe(
-    tap(id => console.log('concatMap source Observable', id)),
+    tap(id => console.log("concatMap source Observable", id)),
     concatMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
   );
 
   // Merge Map
   suppliersWithMergeMap$ = of(1, 5, 8).pipe(
-    tap(id => console.log('mergeMap source Observable', id)),
+    tap(id => console.log("mergeMap source Observable", id)),
     mergeMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
   );
 
   // Switch Map
   suppliersWithSwitchMap$ = of(1, 5, 8).pipe(
-    tap(id => console.log('switchMap source Observable', id)),
+    tap(id => console.log("switchMap source Observable", id)),
     switchMap(id => this.http.get<Supplier>(`${this.suppliersUrl}/${id}`))
   );
-
 
   private handleError(err: any) {
     // in a real world app, we may send the server to some remote logging infrastructure
