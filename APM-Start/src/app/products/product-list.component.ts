@@ -20,7 +20,13 @@ export class ProductListComponent {
 
   //products: Product[] = [];
   //products$: Observable<Product[]>;
-  products$ = this.productService.products$.pipe(
+  // products$ = this.productService.products$.pipe(
+  //   catchError(err => {
+  //     this.errorMessage = err;
+  //     return EMPTY;
+  //   })
+  // );
+  products$ = this.productService.productWithCategory$.pipe(
     catchError(err => {
       this.errorMessage = err;
       return EMPTY;
