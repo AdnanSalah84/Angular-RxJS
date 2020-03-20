@@ -1,33 +1,34 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from "@angular/core";
 
-import { Subscription, EMPTY } from 'rxjs';
+import { Subscription, EMPTY } from "rxjs";
 
-import { Product } from '../product';
-import { ProductService } from '../product.service';
-import { catchError } from 'rxjs/operators';
+import { Product } from "../product";
+import { ProductService } from "../product.service";
+import { catchError } from "rxjs/operators";
 
 @Component({
-  selector: 'pm-product-list',
-  templateUrl: './product-list-alt.component.html'
+  selector: "pm-product-list",
+  templateUrl: "./product-list-alt.component.html",
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductListAltComponent {
-  pageTitle = 'Products';
-  errorMessage = '';
+  pageTitle = "Products";
+  errorMessage = "";
   selectedProductId;
-  
+
   // products: Product[] = [];
   // sub: Subscription;
 
+  constructor(private productService: ProductService) {}
 
-  constructor(private productService: ProductService) { }
+  products$ = this.productService.productWithCategory$.pipe(
+    catchError(err => {
+      this.errorMessage = err;
+      return EMPTY;
+    })
+  );
 
-  products$ = this.productService.products$
-    .pipe(
-      catchError(err =>{
-        this.errorMessage = err;
-        return EMPTY;
-      })
-    );
+  selectedProduct$ = this.productService.selectedProduct$;
 
   // ngOnInit(): void {
   //   this.sub = this.productService.getProducts().subscribe(
@@ -41,6 +42,6 @@ export class ProductListAltComponent {
   // }
 
   onSelected(productId: number): void {
-    console.log('Not yet implemented');
+    this.productService.selectedProductChanged(productId);
   }
 }
