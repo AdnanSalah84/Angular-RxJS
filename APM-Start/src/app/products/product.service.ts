@@ -85,6 +85,18 @@ export class ProductService {
     this.productInsertedAction$
   ).pipe(scan((acc: Product[], value: Product) => [...acc, value]));
 
+  selectedProductSuppliers$ = combineLatest([
+    this.selectedProduct$,
+    this.supplierService.suppliers$
+  ]).pipe(
+    map(([selectedProduct, suppliers]) => {
+      suppliers.filter(supplier =>
+        selectedProduct.supplierIds.includes(supplier.id)
+      );
+    }),
+    tap(supplier => console.log("selectedSupplier", supplier))
+  );
+
   addProduct(newProduct?: Product) {
     newProduct = newProduct || this.fakeProduct();
     this.productInsertedSubject.next(newProduct);
