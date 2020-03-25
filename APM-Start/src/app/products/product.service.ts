@@ -7,9 +7,20 @@ import {
   combineLatest,
   BehaviorSubject,
   Subject,
-  merge
+  merge,
+  from
 } from "rxjs";
-import { catchError, tap, map, scan, shareReplay } from "rxjs/operators";
+import {
+  catchError,
+  tap,
+  map,
+  scan,
+  shareReplay,
+  mergeMap,
+  toArray,
+  filter,
+  switchMap
+} from "rxjs/operators";
 
 import { Product } from "./product";
 import { Supplier } from "../suppliers/supplier";
@@ -85,7 +96,8 @@ export class ProductService {
     this.productInsertedAction$
   ).pipe(scan((acc: Product[], value: Product) => [...acc, value]));
 
-  selectedProductSuppliers$ = combineLatest([
+  // Get it All [Not Wokring]
+  /*selectedProductSuppliers$ = combineLatest([
     this.selectedProduct$,
     this.supplierService.suppliers$
   ]).pipe(
@@ -95,6 +107,21 @@ export class ProductService {
       );
     }),
     tap(supplier => console.log("selectedSupplier", supplier))
+  );*/
+
+  selectedProductSuppliers$ = this.selectedProduct$.pipe(
+    filter(selectedProduct => Boolean(selectedProduct)),
+    switchMap(selectProduct =>
+      from(selectProduct.supplierIds).pipe(
+        mergeMap(supplierId =>
+          this.http.get<Supplier>(`${this.suppliersUrl}/${supplierId}`)
+        ),
+        toArray(),
+        tap(suppliers =>
+          console.log("product suppliers", JSON.stringify(suppliers))
+        )
+      )
+    )
   );
 
   addProduct(newProduct?: Product) {
